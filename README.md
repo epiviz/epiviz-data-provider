@@ -14,5 +14,5 @@ parameters in the `config.py` script.
     python run.py
 ```
 
-# Testing using Insomnia por postman
+# Testing using Insomnia or postman
 upload the `test_ws_client.json` to insomnia, postman or HAR to test the different end points 
