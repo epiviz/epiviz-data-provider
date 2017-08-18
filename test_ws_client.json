@@ -1,0 +1,199 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2017-08-18T03:01:25.295Z",
+	"__export_source": "insomnia.desktop.app:v5.7.12",
+	"resources": [
+		{
+			"_id": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"parentId": null,
+			"modified": 1503007514333,
+			"created": 1503007514333,
+			"name": "Epiviz",
+			"description": "",
+			"certificates": [],
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_6b6d04d75e9e45afb2c6d9bd865c60e0",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503007556219,
+			"created": 1503007556219,
+			"name": "Base Environment",
+			"data": {},
+			"color": null,
+			"isPrivate": false,
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_bb829d5e31834f458985b5be512124f5",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503009103134,
+			"created": 1503009103134,
+			"name": "Default Jar",
+			"cookies": [],
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "req_09317301c4804fc9b4f65e6a97cf2b1c",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503009178615,
+			"created": 1503007556141,
+			"url": "localhost:5000",
+			"name": "GetSeqInfo",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "1",
+					"id": "pair_9beb7581b181457685b2dd05e8025da2"
+				},
+				{
+					"name": "action",
+					"value": "getSeqInfo",
+					"id": "pair_10f7430ddaf944ef9440f83cfbaabce5"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_099eae204cf944b599444247b2edfd06"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_369dcc6f44b645e4973feaa1a3075f3d"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503007556141,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_9f4f7faaf8d544eca29d18f1a5deee22",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503014586364,
+			"created": 1503014509315,
+			"url": "localhost:5000",
+			"name": "getMeasurements",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "2",
+					"id": "pair_942fb3412a69497d8c8357cfe14adc52"
+				},
+				{
+					"name": "action",
+					"value": "getMeasurements",
+					"id": "pair_59009b7904d94e1e97d3fc68ad53da25"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_2e858bc0165a4fc8be6b32e0e6e17800"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_44dd1eb7a4184f3b9d4d6ec60d8f5836"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503014509315,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_29b87d88fcb54e52afe451046a860bfb",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503024538155,
+			"created": 1503014518178,
+			"url": "localhost:5000",
+			"name": "getData",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "10",
+					"id": "pair_867b539d3b5f423e87a705ebce199c26"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_79821348b700482081092ac49dd3610a"
+				},
+				{
+					"name": "action",
+					"value": "getData",
+					"id": "pair_9d658fc9acb24d24afc87e5a29061103"
+				},
+				{
+					"name": "datasource",
+					"value": "gene_methylation",
+					"id": "pair_02a40861ed584e79a433b1f942f779ef"
+				},
+				{
+					"name": "measurement",
+					"value": "cancer",
+					"id": "pair_4a4f6c0105eb42ecb5e7ed51226be554"
+				},
+				{
+					"name": "seqName",
+					"value": "chr11",
+					"id": "pair_ed5150ae75b84434ab6ed56fccddb358"
+				},
+				{
+					"name": "start",
+					"value": "31164187",
+					"id": "pair_3b0f77c311ba4f5c8b87dbc99f045c4b"
+				},
+				{
+					"name": "end",
+					"value": "91164187",
+					"id": "pair_449d8152204a436b8bff34cfb1958dd6"
+				},
+				{
+					"name": "genome",
+					"value": "hg18",
+					"id": "pair_38b699aea6dd454bb534add8d751d22e"
+				},
+				{
+					"name": "metadata",
+					"value": "\"[]\"",
+					"id": "pair_e4ab2d0c39d74300b9099c294735e4b8"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_9aa536d58b944868a1649a74fdc81f06"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503014518178,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		}
+	]
+}
