@@ -16,12 +16,12 @@ def create_request(action, request):
     """
 
     req_manager = {
-        "getSeqInfo": SeqInfoRequest,
+        "getSeqInfos": SeqInfoRequest,
         "getMeasurements": MeasurementRequest,
         "getData": DataRequest,
         "getRows": DataRequest,
         "getValues": DataRequest,
-        "getSummaryByegion": RegionSummaryRequest,
+        "getSummaryByRegion": RegionSummaryRequest,
     }
 
     return req_manager[action](request)
@@ -70,7 +70,16 @@ class SeqInfoRequest(EpivizRequest):
 
     def get_data(self):
         result = utils.execute_query(self.query, self.params)
-        return result.to_dict(), None
+
+        builds = result.groupby("genome")
+        genome = {}
+
+        for name, group in builds:
+            genome[name] = []
+            for index, row in group.iterrows():
+                genome[name].append([row["chr"], 1, row["seqlength"]])
+
+        return genome["hg19"], None
 
 class MeasurementRequest(EpivizRequest):
     """
@@ -86,7 +95,21 @@ class MeasurementRequest(EpivizRequest):
 
     def get_data(self):
         result = utils.execute_query(self.query, self.params)
-        return result.to_dict(), None
+
+        measurements = {
+            "annotation": result["annotation"].values.tolist(),
+            "datasourceGroup": result["location"].values.tolist(),
+            "datasourceId": result["location"].values.tolist(),
+            "defaultChartType": result["chart_type"].values.tolist(),
+            "id": result["measurement_id"].values.tolist(),
+            "maxValue": result["max_value"].values.tolist(),
+            "minValue": result["min_value"].values.tolist(),
+            "name": result["measurement_name"].values.tolist(),
+            "type": result["type"].values.tolist(),
+            "metadata": result["metadata"].values.tolist()
+        }
+
+        return measurements, None
 
 class DataRequest(EpivizRequest):
     """
@@ -98,32 +121,88 @@ class DataRequest(EpivizRequest):
         self.query = "select %s from %s where chr=%s and start >= %s and end < %s order by chr, start"
 
     def validate_params(self, request):
-        params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata", "measurement"]
+        params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement"]
         params = {}
 
         for key in params_keys:
             if request.has_key(key):
                 params[key] = request.get(key)
-                if key == "start" and params[key] is None:
-                    params[key] = 0
-                elif key == "end" and params[key] is None:
+                if key == "start" and params[key] in [None, ""]:
+                    params[key] = 1
+                elif key == "end" and params[key] in [None, ""]:
                     params[key] = sys.maxint
+                elif key == "metadata":
+                    params[key] = eval(params[key])
             else:
-                raise Exception("missing params in request")
+                if key not in ["measurement", "genome", "metadata[]"]:
+                    raise Exception("missing params in request")
         return params
 
     def get_data(self):
 
-        query_params = [str("chr, start, end, " + self.params.get("measurement")),
-                        str(self.params.get("datasource")),
-                        str(self.params.get("seqName")),
-                        int(self.params.get("start")),
-                        int(self.params.get("end"))]
+        # query_ms = ",".join(self.params.get("measurement"))
+        if self.params.get("measurement") is None:
+            query_ms = "chr, start, end "
+        else:
+            query_ms = "chr, start, end, " + self.params.get("measurement")
 
-        result = utils.execute_query(self.query, query_params)
-        result = utils.bin_rows(result)
+        if self.params.get("datasource") == "genes":
+            query_params = [
+                    "*",
+                    str(self.params.get("datasource")),
+                    "'" + str(self.params.get("seqName")) + "'",
+                    int(self.params.get("start")),
+                    int(self.params.get("end"))]
 
-        return result.to_dict(), None
+            result = utils.execute_query(self.query, query_params)
+        else:
+            query_params = [str(query_ms),
+                    str(self.params.get("datasource")),
+                    "'" + str(self.params.get("seqName")) + "'",
+                    int(self.params.get("start")),
+                    int(self.params.get("end"))]
+
+            result = utils.execute_query(self.query, query_params)
+            result = utils.bin_rows(result)
+
+        globalStartIndex = None
+        if len(result) > 0:
+            globalStartIndex = result["start"].values.min()
+
+        data = {
+            "rows": {
+                "globalStartIndex": globalStartIndex,
+                "useOffset" : False,
+                "values": {
+                    "id": None,
+                    "strand": None,
+                    "metadata": {}
+                }
+            },
+            "values": {
+                "globalStartIndex": globalStartIndex,
+                "values": {}
+            }
+        }
+
+        if len(result) > 0:
+            col_names = result.columns.values.tolist()
+            row_names = ["chr", "start", "end", "strand", "id"]
+
+            for col in col_names:
+                if self.params.get("measurement") is not None and col in self.params.get("measurement"):
+                    data["values"]["values"] = result[col].values.tolist()
+                elif col in row_names:
+                    data["rows"]["values"][col] = result[col].values.tolist()
+                else:
+                    data["rows"]["values"]["metadata"][col] = result[col].values.tolist()
+
+        if self.request.get("action") == "getRows":
+            return data["rows"], None
+        elif self.request.get("action") == "getValues":
+            return data["values"], None
+        else:
+            return data, None
 
 class RegionSummaryRequest(EpivizRequest):
     """
@@ -131,7 +210,7 @@ class RegionSummaryRequest(EpivizRequest):
     """
     def __init__(self, request):
         super(RegionSummaryRequest, self).__init__(request)
-        self.validate_params(request)
+        self.params = self.validate_params(request)
 
     def validate_params(self, request):
         raise Exception("NotImplementedException")

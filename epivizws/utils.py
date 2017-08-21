@@ -22,7 +22,7 @@ def execute_query(query, params):
     else:
         # df = pd.read_sql(query, params=params, con=db.get_engine(app))
         # print params[0], params[1], params[2], params[3], params[4]
-        query_db = query % (params[0], params[1], "'" + params[2] + "'", params[3], params[4])
+        query_db = query % (params[0], params[1], params[2], params[3], params[4])
         df = pd.read_sql(query_db, con=db.get_engine(app))
 
     return df
@@ -47,20 +47,16 @@ def bin_rows(input, max_rows=400):
     col_names = input.columns.values.tolist()
 
     input["rowGroup"] = range(0, input_length)
-    input["rowGroup"] = input["rowGroup"].apply(lambda x: x / step)
+    # input["rowGroup"] = input["rowGroup"].apply(lambda x: x / step)
+    input["rowGroup"] = pd.cut(input["rowGroup"], bins=max_rows)
     input_groups = input.groupby("rowGroup")
 
     input_bin = []
 
-    print col_names
-
     for name, group in input_groups:
-        print name
-        print group
         row = {}
 
         for col in col_names:
-            print col
             if col == "chr":
                 row[col] = group[col].iloc[0]
             elif col == "start":
