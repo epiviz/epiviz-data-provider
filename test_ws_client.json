@@ -1,7 +1,7 @@
 {
 	"_type": "export",
 	"__export_format": 3,
-	"__export_date": "2017-08-18T03:01:25.295Z",
+	"__export_date": "2017-08-24T02:52:42.705Z",
 	"__export_source": "insomnia.desktop.app:v5.7.12",
 	"resources": [
 		{
@@ -37,7 +37,7 @@
 		{
 			"_id": "req_09317301c4804fc9b4f65e6a97cf2b1c",
 			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
-			"modified": 1503009178615,
+			"modified": 1503193224424,
 			"created": 1503007556141,
 			"url": "localhost:5000",
 			"name": "GetSeqInfo",
@@ -52,7 +52,7 @@
 				},
 				{
 					"name": "action",
-					"value": "getSeqInfo",
+					"value": "getSeqInfos",
 					"id": "pair_10f7430ddaf944ef9440f83cfbaabce5"
 				},
 				{
@@ -121,7 +121,7 @@
 		{
 			"_id": "req_29b87d88fcb54e52afe451046a860bfb",
 			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
-			"modified": 1503024538155,
+			"modified": 1503195313593,
 			"created": 1503014518178,
 			"url": "localhost:5000",
 			"name": "getData",
@@ -141,7 +141,7 @@
 				},
 				{
 					"name": "action",
-					"value": "getData",
+					"value": "getValues",
 					"id": "pair_9d658fc9acb24d24afc87e5a29061103"
 				},
 				{
@@ -175,7 +175,7 @@
 					"id": "pair_38b699aea6dd454bb534add8d751d22e"
 				},
 				{
-					"name": "metadata",
+					"name": "metadata[]",
 					"value": "\"[]\"",
 					"id": "pair_e4ab2d0c39d74300b9099c294735e4b8"
 				}
@@ -189,6 +189,239 @@
 			],
 			"authentication": {},
 			"metaSortKey": -1503014518178,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_2c3df4c0876b4a96bd855a3978a86ef0",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503336578816,
+			"created": 1503335891943,
+			"url": "localhost:5000",
+			"name": "getRows",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "10",
+					"id": "pair_867b539d3b5f423e87a705ebce199c26"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_79821348b700482081092ac49dd3610a"
+				},
+				{
+					"name": "action",
+					"value": "getRows",
+					"id": "pair_9d658fc9acb24d24afc87e5a29061103"
+				},
+				{
+					"name": "datasource",
+					"value": "gene_methylation",
+					"id": "pair_02a40861ed584e79a433b1f942f779ef"
+				},
+				{
+					"name": "measurement",
+					"value": "cancer",
+					"id": "pair_4a4f6c0105eb42ecb5e7ed51226be554"
+				},
+				{
+					"name": "seqName",
+					"value": "chr11",
+					"id": "pair_ed5150ae75b84434ab6ed56fccddb358"
+				},
+				{
+					"name": "start",
+					"value": "100784488",
+					"id": "pair_3b0f77c311ba4f5c8b87dbc99f045c4b"
+				},
+				{
+					"name": "end",
+					"value": "124706923",
+					"id": "pair_449d8152204a436b8bff34cfb1958dd6"
+				},
+				{
+					"name": "genome",
+					"value": "hg18",
+					"id": "pair_38b699aea6dd454bb534add8d751d22e"
+				},
+				{
+					"name": "metadata[]",
+					"value": "probe",
+					"id": "pair_e4ab2d0c39d74300b9099c294735e4b8"
+				},
+				{
+					"name": "metadata[]",
+					"value": "gene",
+					"id": "pair_77c56762e30e48919a8f7dc92027e41a"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_9aa536d58b944868a1649a74fdc81f06"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503014513746.5,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_c8eaa6fdd34946c6a093a0551850bf2d",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503506083213,
+			"created": 1503455910139,
+			"url": "localhost:5000",
+			"name": "getValues",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "10",
+					"id": "pair_867b539d3b5f423e87a705ebce199c26"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_79821348b700482081092ac49dd3610a"
+				},
+				{
+					"name": "action",
+					"value": "getValues",
+					"id": "pair_9d658fc9acb24d24afc87e5a29061103"
+				},
+				{
+					"name": "datasource",
+					"value": "gene_methylation",
+					"id": "pair_02a40861ed584e79a433b1f942f779ef"
+				},
+				{
+					"name": "measurement",
+					"value": "cancer",
+					"id": "pair_4a4f6c0105eb42ecb5e7ed51226be554"
+				},
+				{
+					"name": "seqName",
+					"value": "chr11",
+					"id": "pair_ed5150ae75b84434ab6ed56fccddb358"
+				},
+				{
+					"name": "start",
+					"value": "100784488",
+					"id": "pair_3b0f77c311ba4f5c8b87dbc99f045c4b"
+				},
+				{
+					"name": "end",
+					"value": "124706923",
+					"id": "pair_449d8152204a436b8bff34cfb1958dd6"
+				},
+				{
+					"name": "genome",
+					"value": "hg18",
+					"id": "pair_38b699aea6dd454bb534add8d751d22e"
+				},
+				{
+					"name": "metadata[]",
+					"value": "probe",
+					"id": "pair_e4ab2d0c39d74300b9099c294735e4b8"
+				},
+				{
+					"name": "metadata[]",
+					"value": "gene",
+					"id": "pair_77c56762e30e48919a8f7dc92027e41a"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_9aa536d58b944868a1649a74fdc81f06"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503014511530.75,
+			"settingStoreCookies": true,
+			"settingSendCookies": true,
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"_type": "request"
+		},
+		{
+			"_id": "req_7058f3da2b5f4e53895a1a36fa7f31ae",
+			"parentId": "wrk_94c2fcc3eace400f84abaf9b3e0a8332",
+			"modified": 1503500196014,
+			"created": 1503455912734,
+			"url": "localhost:5000",
+			"name": "getRegionSummary",
+			"description": "",
+			"method": "GET",
+			"body": {},
+			"parameters": [
+				{
+					"name": "requestId",
+					"value": "10",
+					"id": "pair_867b539d3b5f423e87a705ebce199c26"
+				},
+				{
+					"name": "version",
+					"value": "4",
+					"id": "pair_79821348b700482081092ac49dd3610a"
+				},
+				{
+					"name": "action",
+					"value": "getSummaryByRegion",
+					"id": "pair_9d658fc9acb24d24afc87e5a29061103"
+				},
+				{
+					"name": "datasource",
+					"value": "gene_methylation",
+					"id": "pair_02a40861ed584e79a433b1f942f779ef"
+				},
+				{
+					"name": "measurement",
+					"value": "cancer",
+					"id": "pair_4a4f6c0105eb42ecb5e7ed51226be554"
+				},
+				{
+					"name": "metadata[]",
+					"value": "probe",
+					"id": "pair_e4ab2d0c39d74300b9099c294735e4b8"
+				},
+				{
+					"name": "metadata[]",
+					"value": "gene",
+					"id": "pair_77c56762e30e48919a8f7dc92027e41a"
+				},
+				{
+					"name": "regions",
+					"value": "[{\n\t\"genome\": \"hg18\",\n\t\"seqName\": \"chr11\",\n\t\"start\": 100000,\n\t\"end\": 1000000\n}, {\n\t\"genome\": \"hg18\",\n\t\"seqName\": \"chr1\",\n\t\"start\": 900000,\n\t\"end\": 2100000\n}, {\n\t\"genome\": \"hg18\",\n\t\"seqName\": \"chr9\",\n\t\"start\": 500000,\n\t\"end\": 1400000\n}]",
+					"id": "pair_93ccac359e314ec58799c933d000d1a3",
+					"type": "text",
+					"multiline": "application/json"
+				}
+			],
+			"headers": [
+				{
+					"name": "Content-Type",
+					"value": "application/json",
+					"id": "pair_9aa536d58b944868a1649a74fdc81f06"
+				}
+			],
+			"authentication": {},
+			"metaSortKey": -1503014510422.875,
 			"settingStoreCookies": true,
 			"settingSendCookies": true,
 			"settingDisableRenderRequestBody": false,
