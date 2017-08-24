@@ -19,9 +19,10 @@ def execute_query(query, params):
     """
     if params is None:
         df = pd.read_sql(query, con=db.get_engine(app))
+    elif len(params) == 2:
+        query_db = query % (params[0], params[1])
+        df = pd.read_sql(query_db, con=db.get_engine(app))      
     else:
-        # df = pd.read_sql(query, params=params, con=db.get_engine(app))
-        # print params[0], params[1], params[2], params[3], params[4]
         query_db = query % (params[0], params[1], params[2], params[3], params[4])
         df = pd.read_sql(query_db, con=db.get_engine(app))
 
@@ -38,6 +39,8 @@ def bin_rows(input, max_rows=400):
         Return:
             data frame with scaled rows
     """
+
+    input = input.sort_values(["chr", "start"])
     input_length = len(input)
 
     if input_length < max_rows:
@@ -57,9 +60,9 @@ def bin_rows(input, max_rows=400):
         row = {}
 
         for col in col_names:
-            if col == "chr":
+            if col in ["chr", "probe", "gene"]:
                 row[col] = group[col].iloc[0]
-            elif col == "start":
+            elif col in ["start", "id"]:
                 row[col] = group[col].min()
             elif col == "end":
                 row[col] = group[col].max()
@@ -70,3 +73,51 @@ def bin_rows(input, max_rows=400):
 
     bin_input = pd.DataFrame(input_bin)
     return bin_input
+
+def format_result(input, params):
+    globalStartIndex = None
+    if len(input) > 0:
+        globalStartIndex = input["id"].values.min()
+
+    data = {
+        "rows": {
+            "globalStartIndex": globalStartIndex,
+            "useOffset" : False,
+            "values": {
+                "id": None,
+                "strand": [],
+                "metadata": {}
+            }
+        },
+        "values": {
+            "globalStartIndex": globalStartIndex,
+            "values": {}
+        }
+    }
+
+    if len(input) > 0:
+        col_names = input.columns.values.tolist()
+        row_names = ["chr", "start", "end", "strand", "id"]
+
+        for col in col_names:
+            if params.get("measurement") is not None and col in params.get("measurement"):
+                data["values"]["values"] = input[col].values.tolist()
+            elif col in row_names:
+                data["rows"]["values"][col] = input[col].values.tolist()
+            else:
+                data["rows"]["values"]["metadata"][col] = input[col].values.tolist()
+    else:
+        data["rows"]["values"]["start"] = []
+        data["rows"]["values"]["end"] = []
+
+        if params.get("metadata") is not None:
+            for met in params.get("metadata"):
+                data["rows"]["values"]["metadata"][met] = []
+
+
+    data["rows"]["values"]["id"] = None
+
+    if params.get("datasource") != "genes":
+        data["rows"]["values"]["strand"] = None
+
+    return data
