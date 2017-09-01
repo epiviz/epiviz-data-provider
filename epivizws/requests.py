@@ -2,6 +2,8 @@
 
 import epivizws.utils as utils
 from flask import request
+import ujson
+import sys
 
 def create_request(action, request):
     """
@@ -19,6 +21,7 @@ def create_request(action, request):
         "getSeqInfos": SeqInfoRequest,
         "getMeasurements": MeasurementRequest,
         "getData": DataRequest,
+        "getCombined": DataRequest,
         "getRows": DataRequest,
         "getValues": DataRequest,
         "getSummaryByRegion": RegionSummaryRequest,
@@ -79,7 +82,7 @@ class SeqInfoRequest(EpivizRequest):
             for index, row in group.iterrows():
                 genome[name].append([row["chr"], 1, row["seqlength"]])
 
-        return genome["hg19"], None
+        return genome, None
 
 class MeasurementRequest(EpivizRequest):
     """
@@ -95,6 +98,8 @@ class MeasurementRequest(EpivizRequest):
 
     def get_data(self):
         result = utils.execute_query(self.query, self.params)
+
+        # metadata = result["metadata"].apply(lambda x: ujson.loads(x))
 
         measurements = {
             "annotation": result["annotation"].values.tolist(),
@@ -119,7 +124,7 @@ class DataRequest(EpivizRequest):
     def __init__(self, request):
         super(DataRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select distinct %s from %s where chr=%s and start >= %s and end < %s order by chr, start"
+        self.query = "select distinct %s from %s where chr=%s and end >= %s and start < %s order by chr, start"
 
     def validate_params(self, request):
         params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement"]
@@ -142,7 +147,6 @@ class DataRequest(EpivizRequest):
 
     def get_data(self):
 
-        # query_ms = ",".join(self.params.get("measurement"))
         if self.params.get("measurement") is None:
             query_ms = "id, chr, start, end "
         else:
@@ -152,7 +156,6 @@ class DataRequest(EpivizRequest):
             metadata = ", ".join(self.params.get("metadata"))
             query_ms = query_ms + ", " + metadata
 
-        globalStartIndex = None
         if self.params.get("datasource") == "genes":
             query_params = [
                 str(query_ms) + ", strand",
@@ -162,8 +165,6 @@ class DataRequest(EpivizRequest):
                 int(self.params.get("end"))]
 
             result = utils.execute_query(self.query, query_params)
-            globalStartIndex = result["id"].values.min()
-            result = result.sort_values(["chr", "start"])
         else:
             query_params = [
                 str(query_ms),
@@ -173,12 +174,7 @@ class DataRequest(EpivizRequest):
                 int(self.params.get("end"))]
 
             result = utils.execute_query(self.query, query_params)
-            total_length = len(result)
             # result = utils.bin_rows(result)
-            # print total_length
-            # print result["id"].values.min()
-            # print 400/total_length
-            # globalStartIndex = int(result["id"].values.min() * 400.0/total_length)
 
         data = utils.format_result(result, self.params)
 

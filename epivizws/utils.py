@@ -40,7 +40,6 @@ def bin_rows(input, max_rows=400):
             data frame with scaled rows
     """
 
-    input = input.sort_values(["chr", "start"])
     input_length = len(input)
 
     if input_length < max_rows:
@@ -50,7 +49,6 @@ def bin_rows(input, max_rows=400):
     col_names = input.columns.values.tolist()
 
     input["rowGroup"] = range(0, input_length)
-    # input["rowGroup"] = input["rowGroup"].apply(lambda x: x / step)
     input["rowGroup"] = pd.cut(input["rowGroup"], bins=max_rows)
     input_groups = input.groupby("rowGroup")
 
@@ -78,11 +76,18 @@ def format_result(input, params):
     globalStartIndex = None
     if len(input) > 0:
         globalStartIndex = input["id"].values.min()
+        minStart = input["start"].iloc[0]
+        minEnd = input["end"].iloc[0]
+        input["start"] = input["start"].diff()
+        input["end"] = input["end"].diff()
+        input["start"].iloc[0] = minStart
+        input["end"].iloc[0] = minEnd
+
 
     data = {
         "rows": {
             "globalStartIndex": globalStartIndex,
-            "useOffset" : False,
+            "useOffset" : True,
             "values": {
                 "id": None,
                 "strand": [],

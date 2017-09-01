@@ -58,7 +58,8 @@ def process_request():
     return Response(response=dumps({"requestId": int(param_id),
                                     "type": "response",
                                     "error": error,
-                                    "data": result
+                                    "data": result,
+                                    "version": 5
                                 }),
                     status=200,
                     mimetype="application/json")
