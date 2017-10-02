@@ -58,7 +58,7 @@ def bin_rows(input, max_rows=400):
         row = {}
 
         for col in col_names:
-            if col in ["chr", "probe", "gene"]:
+            if col in ["chr", "probe", "gene", "region"]:
                 row[col] = group[col].iloc[0]
             elif col in ["start", "id"]:
                 row[col] = group[col].min()
@@ -90,6 +90,7 @@ def format_result(input, params):
             "useOffset" : True,
             "values": {
                 "id": None,
+                "chr": [],
                 "strand": [],
                 "metadata": {}
             }
@@ -106,7 +107,7 @@ def format_result(input, params):
 
         for col in col_names:
             if params.get("measurement") is not None and col in params.get("measurement"):
-                data["values"]["values"] = input[col].values.tolist()
+                data["values"]["values"][col] = input[col].values.tolist()
             elif col in row_names:
                 data["rows"]["values"][col] = input[col].values.tolist()
             else:

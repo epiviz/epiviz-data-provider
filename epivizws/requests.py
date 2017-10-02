@@ -140,6 +140,9 @@ class DataRequest(EpivizRequest):
                 elif key == "metadata[]":
                     del params["metadata[]"]
                     params["metadata"] = request.getlist(key)
+                elif key == "measurement":
+                    # del params["measurement"]
+                    params["measurement"] = params["measurement"].split(",")
             else:
                 if key not in ["measurement", "genome", "metadata[]"]:
                     raise Exception("missing params in request")
@@ -150,11 +153,14 @@ class DataRequest(EpivizRequest):
         if self.params.get("measurement") is None:
             query_ms = "id, chr, start, end "
         else:
-            query_ms = "id, chr, start, end, " + self.params.get("measurement")
+            measurement = ", ".join(self.params.get("measurement"))
+            query_ms = "id, chr, start, end, " + measurement
+            # query_ms = "id, chr, start, end, " + self.params.get("measurement")
 
         if self.params.get("metadata"):
             metadata = ", ".join(self.params.get("metadata"))
-            query_ms = query_ms + ", " + metadata
+            if metadata != "[]":
+                query_ms = query_ms + ", " + metadata
 
         if self.params.get("datasource") == "genes":
             query_params = [
