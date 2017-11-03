@@ -4,6 +4,9 @@ import epivizws.utils as utils
 from flask import request
 import ujson
 import sys
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import os
 
 def create_request(action, request):
     """
@@ -25,6 +28,7 @@ def create_request(action, request):
         "getRows": DataRequest,
         "getValues": DataRequest,
         "getSummaryByRegion": RegionSummaryRequest,
+        "getScreenshot": ScreenshotRequest
     }
 
     return req_manager[action](request)
@@ -264,3 +268,23 @@ class RegionSummaryRequest(EpivizRequest):
             return data["values"], None
         else:
             return data, None
+
+class ScreenshotRequest(EpivizRequest):
+    """
+        Region summary requests class
+    """
+    def __init__(self, request):
+        super(ScreenshotRequest, self).__init__(request)
+        self.chromePath = ""
+
+    def get_data(self):
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--window-size=1920x1080")
+        chrome_driver = os.getcwd() + "\\chromedriver.exe"
+
+        driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=chrome_driver)
+        driver.get("https://epiviz.cbcb.umd.edu/?ws=" + self.params.get("workspaceId"))
+        respImage = driver.get_screenshot_as_png()
+
+        return respImage, None

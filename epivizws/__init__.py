@@ -2,7 +2,7 @@
     Initialize the package
 """
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, send_file
 from flask_sqlalchemy import SQLAlchemy
 from epivizws.config import app_config
 from ujson import dumps
@@ -55,12 +55,15 @@ def process_request():
     epiviz_request = create_request(param_action, request.values)
     result, error = epiviz_request.get_data()
 
-    return Response(response=dumps({"requestId": int(param_id),
-                                    "type": "response",
-                                    "error": error,
-                                    "data": result,
-                                    "version": 5
-                                }),
-                    status=200,
-                    mimetype="application/json")
+    if param_action == "getScreenshot":
+        return send_file(result, attachment_filename='epiviz_' + request.values.get("workspaceId") + '.jpeg', mimetype='image/jpg')
+    else:
+        return Response(response=dumps({"requestId": int(param_id),
+                                        "type": "response",
+                                        "error": error,
+                                        "data": result,
+                                        "version": 5
+                                    }),
+                        status=200,
+                        mimetype="application/json")
     
