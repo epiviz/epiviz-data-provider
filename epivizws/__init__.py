@@ -6,6 +6,7 @@ from flask import Flask, request, jsonify, Response, send_file
 from flask_sqlalchemy import SQLAlchemy
 from epivizws.config import app_config
 from ujson import dumps
+from io import BytesIO
 
 app = Flask(__name__)
 app.config.from_object(app_config)
@@ -56,7 +57,7 @@ def process_request():
     result, error = epiviz_request.get_data()
 
     if param_action == "getScreenshot":
-        return send_file(result, attachment_filename='epiviz_' + request.values.get("workspaceId") + '.jpeg', mimetype='image/jpg')
+        return send_file(BytesIO(result), attachment_filename='epiviz_' + request.values.get("workspaceId") + '.jpeg', mimetype='image/jpg')
     else:
         return Response(response=dumps({"requestId": int(param_id),
                                         "type": "response",

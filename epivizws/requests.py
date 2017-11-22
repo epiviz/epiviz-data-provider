@@ -276,15 +276,19 @@ class ScreenshotRequest(EpivizRequest):
     def __init__(self, request):
         super(ScreenshotRequest, self).__init__(request)
         self.chromePath = ""
+        self.params = request
 
     def get_data(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1920x1080")
-        chrome_driver = os.getcwd() + "\\chromedriver.exe"
+        chrome_driver = os.getcwd() + "/epivizws/chromedriver"
 
         driver = webdriver.Chrome(chrome_options=chrome_options, executable_path=chrome_driver)
-        driver.get("https://epiviz.cbcb.umd.edu/?ws=" + self.params.get("workspaceId"))
+        driver.implicitly_wait(500)
+        driver.set_page_load_timeout(500)
+        driver.get("https://epiviz.cbcb.umd.edu/4/?ws=" + self.params.get("workspaceId"))
+        # driver.get("http://epiviz.cbcb.umd.edu/4/?ws=qg1K0lJ29cs&useCookie=true&seqName=chr11&start=1&end=135086622&settings=default&")
         respImage = driver.get_screenshot_as_png()
 
         return respImage, None
