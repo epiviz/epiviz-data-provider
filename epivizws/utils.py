@@ -28,7 +28,7 @@ def execute_query(query, params):
 
     return df
 
-def bin_rows(input, max_rows=400):
+def bin_rows(input, max_rows=2000):
     """
         Helper function to scale rows to resolution
 

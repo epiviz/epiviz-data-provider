@@ -184,15 +184,16 @@ class DataRequest(EpivizRequest):
                 int(self.params.get("end"))]
 
             result = utils.execute_query(self.query, query_params)
-            # result = utils.bin_rows(result)
-
-        data = utils.format_result(result, self.params)
 
         if self.request.get("action") == "getRows":
+            data = utils.format_result(result, self.params)
             return data["rows"], None
         elif self.request.get("action") == "getValues":
-            return data["values"], None
+            # result = utils.bin_rows(result)
+            data = utils.format_result(result, self.params)
+            return data, None
         else:
+            data = utils.format_result(result, self.params)
             return data, None
 
 class RegionSummaryRequest(EpivizRequest):
