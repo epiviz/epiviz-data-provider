@@ -189,7 +189,7 @@ class DataRequest(EpivizRequest):
             data = utils.format_result(result, self.params)
             return data["rows"], None
         elif self.request.get("action") == "getValues":
-            # result = utils.bin_rows(result)
+            result = utils.bin_rows(result)
             data = utils.format_result(result, self.params)
             return data, None
         else:

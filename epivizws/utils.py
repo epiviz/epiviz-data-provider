@@ -83,7 +83,6 @@ def format_result(input, params):
         input["start"].iloc[0] = minStart
         input["end"].iloc[0] = minEnd
 
-
     data = {
         "rows": {
             "globalStartIndex": globalStartIndex,
