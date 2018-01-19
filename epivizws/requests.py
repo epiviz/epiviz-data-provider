@@ -104,9 +104,15 @@ class MeasurementRequest(EpivizRequest):
         result = utils.execute_query(self.query, self.params)
 
         # metadata = result["metadata"].apply(lambda x: ujson.loads(x))
+        annotation = []
 
+        for anno in result["annotation"].values.tolist():
+            if anno is not None:
+                anno = ujson.loads(anno)
+            annotation.append(anno)
+            
         measurements = {
-            "annotation": result["annotation"].values.tolist(),
+            "annotation": annotation,
             "datasourceGroup": result["location"].values.tolist(),
             "datasourceId": result["location"].values.tolist(),
             "defaultChartType": result["chart_type"].values.tolist(),
