@@ -72,21 +72,12 @@ def bin_rows(input, max_rows=2000):
     bin_input = pd.DataFrame(input_bin)
     return bin_input
 
-def format_result(input, params):
+def format_result(input, params, offset = True):
     globalStartIndex = None
-    if len(input) > 0:
-        globalStartIndex = input["id"].values.min()
-        minStart = input["start"].iloc[0]
-        minEnd = input["end"].iloc[0]
-        input["start"] = input["start"].diff()
-        input["end"] = input["end"].diff()
-        input["start"].iloc[0] = minStart
-        input["end"].iloc[0] = minEnd
-
     data = {
         "rows": {
             "globalStartIndex": globalStartIndex,
-            "useOffset" : True,
+            "useOffset" : offset,
             "values": {
                 "id": None,
                 "chr": [],
@@ -101,8 +92,35 @@ def format_result(input, params):
     }
 
     if len(input) > 0:
+        globalStartIndex = input["id"].values.min()
+        
+        if offset:
+            minStart = input["start"].iloc[0]
+            minEnd = input["end"].iloc[0]
+            input["start"] = input["start"].diff()
+            input["end"] = input["end"].diff()
+            input["start"].iloc[0] = minStart
+            input["end"].iloc[0] = minEnd
+
         col_names = input.columns.values.tolist()
         row_names = ["chr", "start", "end", "strand", "id"]
+
+        data = {
+            "rows": {
+                "globalStartIndex": globalStartIndex,
+                "useOffset" : offset,
+                "values": {
+                    "id": None,
+                    "chr": [],
+                    "strand": [],
+                    "metadata": {}
+                }
+            },
+            "values": {
+                "globalStartIndex": globalStartIndex,
+                "values": {}
+            }
+        }
 
         for col in col_names:
             if params.get("measurement") is not None and col in params.get("measurement"):

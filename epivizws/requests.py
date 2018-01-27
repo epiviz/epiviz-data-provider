@@ -135,9 +135,10 @@ class DataRequest(EpivizRequest):
         super(DataRequest, self).__init__(request)
         self.params = self.validate_params(request)
         self.query = "select distinct %s from %s where chr=%s and end >= %s and start < %s order by chr, start"
+        self.query_all = "select distinct %s from %s order by chr, start"
 
     def validate_params(self, request):
-        params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement"]
+        params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement", "measurements[]"]
         params = {}
 
         for key in params_keys:
@@ -147,12 +148,19 @@ class DataRequest(EpivizRequest):
                     params[key] = 1
                 elif key == "end" and params[key] in [None, ""]:
                     params[key] = sys.maxint
+                elif key == "seqName" and params[key] in [None, "", "all"]:
+                    params[key] = None
                 elif key == "metadata[]":
                     del params["metadata[]"]
                     params["metadata"] = request.getlist(key)
                 elif key == "measurement":
                     # del params["measurement"]
                     params["measurement"] = params["measurement"].split(",")
+                elif key == "measurements[]":
+                    del params["measurements[]"]
+                    params["measurement"] = request.getlist(key)
+                    if "genes" in params["measurement"]:
+                        params["measurement"] = None
             else:
                 if key not in ["measurement", "genome", "metadata[]"]:
                     raise Exception("missing params in request")
@@ -172,7 +180,7 @@ class DataRequest(EpivizRequest):
             if metadata != "[]":
                 query_ms = query_ms + ", " + metadata
 
-        if self.params.get("datasource") == "genes":
+        if "genes" in self.params.get("datasource"):
             query_params = [
                 str(query_ms) + ", strand",
                 str(self.params.get("datasource")),
@@ -182,24 +190,32 @@ class DataRequest(EpivizRequest):
 
             result = utils.execute_query(self.query, query_params)
         else:
-            query_params = [
-                str(query_ms),
-                str(self.params.get("datasource")),
-                "'" + str(self.params.get("seqName")) + "'",
-                int(self.params.get("start")),
-                int(self.params.get("end"))]
+            if self.params.get("seqName") is None:
+                query_params = [
+                    str(query_ms),
+                    str(self.params.get("datasource"))]
 
-            result = utils.execute_query(self.query, query_params)
+                result = utils.execute_query(self.query_all, query_params)
+            else:
+                query_params = [
+                    str(query_ms),
+                    str(self.params.get("datasource")),
+                    "'" + str(self.params.get("seqName")) + "'",
+                    int(self.params.get("start")),
+                    int(self.params.get("end"))]
+
+                result = utils.execute_query(self.query, query_params)
 
         if self.request.get("action") == "getRows":
             data = utils.format_result(result, self.params)
             return data["rows"], None
         elif self.request.get("action") == "getValues":
-            result = utils.bin_rows(result)
+            if self.params.get("seqName") is not None:
+                result = utils.bin_rows(result)
             data = utils.format_result(result, self.params)
             return data, None
         else:
-            data = utils.format_result(result, self.params)
+            data = utils.format_result(result, self.params, False)
             return data, None
 
 class RegionSummaryRequest(EpivizRequest):
