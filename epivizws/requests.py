@@ -76,17 +76,22 @@ class SeqInfoRequest(EpivizRequest):
         return None
 
     def get_data(self):
-        result = utils.execute_query(self.query, self.params)
 
-        builds = result.groupby("genome")
         genome = {}
+        error = None
 
-        for name, group in builds:
-            genome[name] = []
-            for index, row in group.iterrows():
-                genome[name].append([row["chr"], 1, row["seqlength"]])
+        try :
+            result = utils.execute_query(self.query, self.params)
+            builds = result.groupby("genome")
 
-        return genome, None
+            for name, group in builds:
+                genome[name] = []
+                for index, row in group.iterrows():
+                    genome[name].append([row["chr"], 1, row["seqlength"]])
+        except Exception as e:
+            error = e
+
+        return genome, error
 
 class MeasurementRequest(EpivizRequest):
     """
@@ -101,31 +106,39 @@ class MeasurementRequest(EpivizRequest):
         return None
 
     def get_data(self):
-        result = utils.execute_query(self.query, self.params)
 
-        # metadata = result["metadata"].apply(lambda x: ujson.loads(x))
-        annotation = []
+        measurements = {}
+        error = None
 
-        for anno in result["annotation"].values.tolist():
-            if anno is not None:
-                anno = ujson.loads(anno)
-            annotation.append(anno)
-            
-        measurements = {
-            "annotation": annotation,
-            "datasourceGroup": result["location"].values.tolist(),
-            "datasourceId": result["location"].values.tolist(),
-            "defaultChartType": result["chart_type"].values.tolist(),
-            # "id": result["measurement_id"].values.tolist(),
-            "id": result["column_name"].values.tolist(),
-            "maxValue": result["max_value"].values.tolist(),
-            "minValue": result["min_value"].values.tolist(),
-            "name": result["measurement_name"].values.tolist(),
-            "type": result["type"].values.tolist(),
-            "metadata": result["metadata"].values.tolist()
-        }
+        try:
+            result = utils.execute_query(self.query, self.params)
 
-        return measurements, None
+            # metadata = result["metadata"].apply(lambda x: ujson.loads(x))
+            annotation = []
+
+            for anno in result["annotation"].values.tolist():
+                if anno is not None:
+                    anno = ujson.loads(anno)
+                annotation.append(anno)
+                
+            measurements = {
+                "annotation": annotation,
+                "datasourceGroup": result["location"].values.tolist(),
+                "datasourceId": result["location"].values.tolist(),
+                "defaultChartType": result["chart_type"].values.tolist(),
+                # "id": result["measurement_id"].values.tolist(),
+                "id": result["column_name"].values.tolist(),
+                "maxValue": result["max_value"].values.tolist(),
+                "minValue": result["min_value"].values.tolist(),
+                "name": result["measurement_name"].values.tolist(),
+                "type": result["type"].values.tolist(),
+                "metadata": result["metadata"].values.tolist()
+            }
+
+        except Exception as e:
+            error = e
+
+        return measurements, error
 
 class DataRequest(EpivizRequest):
     """
@@ -134,7 +147,7 @@ class DataRequest(EpivizRequest):
     def __init__(self, request):
         super(DataRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select distinct %s from %s where chr=%s and end >= %s and start < %s order by chr, start"
+        self.query_filter = "select distinct %s from %s where chr=%s and end >= %s and start < %s order by chr, start"
         self.query_all = "select distinct %s from %s order by chr, start"
 
     def validate_params(self, request):
@@ -162,11 +175,16 @@ class DataRequest(EpivizRequest):
                     if "genes" in params["measurement"]:
                         params["measurement"] = None
             else:
-                if key not in ["measurement", "genome", "metadata[]"]:
+                if key not in ["measurement", "genome", "metadata[]", "measurements[]"]:
                     raise Exception("missing params in request")
         return params
 
     def get_data(self):
+
+        query = None
+        query_params = []
+        query_ms = None
+        measurement = None
 
         if self.params.get("measurement") is None:
             query_ms = "id, chr, start, end "
@@ -188,14 +206,14 @@ class DataRequest(EpivizRequest):
                 int(self.params.get("start")),
                 int(self.params.get("end"))]
 
-            result = utils.execute_query(self.query, query_params)
+            query = self.query_filter
         else:
             if self.params.get("seqName") is None:
                 query_params = [
                     str(query_ms),
                     str(self.params.get("datasource"))]
 
-                result = utils.execute_query(self.query_all, query_params)
+                query = self.query_all
             else:
                 query_params = [
                     str(query_ms),
@@ -204,19 +222,33 @@ class DataRequest(EpivizRequest):
                     int(self.params.get("start")),
                     int(self.params.get("end"))]
 
-                result = utils.execute_query(self.query, query_params)
+                query = self.query_filter
 
-        if self.request.get("action") == "getRows":
-            data = utils.format_result(result, self.params)
-            return data["rows"], None
-        elif self.request.get("action") == "getValues":
-            if self.params.get("seqName") is not None:
-                result = utils.bin_rows(result)
-            data = utils.format_result(result, self.params)
-            return data, None
-        else:
-            data = utils.format_result(result, self.params, False)
-            return data, None
+        try:
+            result = utils.execute_query(query, query_params)
+
+            if self.request.get("action") == "getRows":
+                data = utils.format_result(result, self.params)
+                if len(result) == 0:
+                    return data["rows"], ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                else:
+                    return data["rows"], None
+            elif self.request.get("action") == "getValues":
+                if self.params.get("seqName") is not None:
+                    result = utils.bin_rows(result)
+                data = utils.format_result(result, self.params)
+                if len(result) == 0:
+                    return data, ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                else:
+                    return data, None
+            else:
+                data = utils.format_result(result, self.params, False)
+                if len(result) == 0:
+                    return data, ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                else:
+                    return data, None
+        except Exception as e:
+            return {}, str(e)
 
 class RegionSummaryRequest(EpivizRequest):
     """
