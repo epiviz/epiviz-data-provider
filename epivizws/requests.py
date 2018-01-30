@@ -223,14 +223,13 @@ class DataRequest(EpivizRequest):
                     int(self.params.get("end"))]
 
                 query = self.query_filter
-
         try:
             result = utils.execute_query(query, query_params)
 
             if self.request.get("action") == "getRows":
                 data = utils.format_result(result, self.params)
                 if len(result) == 0:
-                    return data["rows"], ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                    return data["rows"], ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
                     return data["rows"], None
             elif self.request.get("action") == "getValues":
@@ -238,13 +237,13 @@ class DataRequest(EpivizRequest):
                     result = utils.bin_rows(result)
                 data = utils.format_result(result, self.params)
                 if len(result) == 0:
-                    return data, ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                    return data, ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
                     return data, None
             else:
                 data = utils.format_result(result, self.params, False)
                 if len(result) == 0:
-                    return data, ("query did not match any %s from %s " % (measurement, self.param.get("datasource")))
+                    return data, ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
                     return data, None
         except Exception as e:
