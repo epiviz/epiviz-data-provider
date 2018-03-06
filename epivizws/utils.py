@@ -6,7 +6,7 @@ import pandas as pd
 import numpy as np
 from epivizws import db, app
 
-def execute_query(query, params):
+def execute_query(query, params, type="data"):
     """
         Helper function to execute queries
 
@@ -17,11 +17,21 @@ def execute_query(query, params):
         Result:
             data frame of query result
     """
+
+    if type is "search":
+        df = pd.read_sql(query, con=db.get_engine(app), params=params)
+        return df
+    # if params is None:
+    #     df = pd.read_sql(query, con=db.get_engine(app))
+    # else:
+    #     df = pd.read_sql(query, con=db.get_engine(app), params=params)
+    # return df
+
     if params is None:
         df = pd.read_sql(query, con=db.get_engine(app))
     elif len(params) == 2:
         query_db = query % (params[0], params[1])
-        df = pd.read_sql(query_db, con=db.get_engine(app))      
+        df = pd.read_sql(query_db, con=db.get_engine(app))    
     else:
         query_db = query % (params[0], params[1], params[2], params[3], params[4])
         df = pd.read_sql(query_db, con=db.get_engine(app))
@@ -52,24 +62,20 @@ def bin_rows(input, max_rows=2000):
     input["rowGroup"] = pd.cut(input["rowGroup"], bins=max_rows)
     input_groups = input.groupby("rowGroup")
 
-    input_bin = []
+    agg_dict = {}
 
-    for name, group in input_groups:
-        row = {}
+    for col in col_names:
+        if col in ["chr", "probe", "gene", "region"]:
+            agg_dict[col] = 'first'
+        elif col in ["start", "id"]:
+            agg_dict[col] = 'min'
+        elif col == "end":
+            agg_dict[col] = 'max'
+        else:
+            agg_dict[col] = 'mean'
 
-        for col in col_names:
-            if col in ["chr", "probe", "gene", "region"]:
-                row[col] = group[col].iloc[0]
-            elif col in ["start", "id"]:
-                row[col] = group[col].min()
-            elif col == "end":
-                row[col] = group[col].max()
-            else:
-                row[col] = group[col].mean()
+    bin_input = input_groups.agg(agg_dict)
 
-        input_bin.append(row)
-
-    bin_input = pd.DataFrame(input_bin)
     return bin_input
 
 def format_result(input, params, offset = True):
@@ -136,7 +142,8 @@ def format_result(input, params, offset = True):
         if params.get("metadata") is not None:
             for met in params.get("metadata"):
                 data["rows"]["values"]["metadata"][met] = []
-
+        # else:
+        #     data["rows"]["values"]["metadata"] = None
 
     data["rows"]["values"]["id"] = None
 

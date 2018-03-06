@@ -28,7 +28,8 @@ def create_request(action, request):
         "getRows": DataRequest,
         "getValues": DataRequest,
         "getSummaryByRegion": RegionSummaryRequest,
-        "getScreenshot": ScreenshotRequest
+        "getScreenshot": ScreenshotRequest,
+        "search": SearchRequest
     }
 
     return req_manager[action](request)
@@ -303,8 +304,6 @@ class RegionSummaryRequest(EpivizRequest):
 
         self.query = self.query + " order by chr, start"
 
-        print self.query
-
         globalStartIndex = None
         query_params = [
             str(query_ms),
@@ -346,3 +345,35 @@ class ScreenshotRequest(EpivizRequest):
         respImage = driver.get_screenshot_as_png()
 
         return respImage, None
+
+class SearchRequest(EpivizRequest):
+    """
+        Region summary requests class
+    """
+    def __init__(self, request):
+        super(SearchRequest, self).__init__(request)
+        self.params = self.validate_params(request)
+        self.query = "select `chr`, `start`, `end`, gene from genes where gene like %s limit %s"
+
+    def validate_params(self, request):
+        params_keys = ["q", "maxResults"]
+        params = {}
+
+        for key in params_keys:
+            if request.has_key(key):
+                params[key] = request.get(key)
+            else:
+                if key not in ["measurement", "genome", "metadata[]"]:
+                    raise Exception("missing params in request")
+        return params
+
+    def get_data(self):
+        query_params = [
+            "%" + str(self.params.get("q")) + "%",
+            int(self.params.get("maxResults"))]
+
+        result = utils.execute_query(self.query, query_params, "search")
+
+        return result.to_dict(orient='records'), None
+
+
