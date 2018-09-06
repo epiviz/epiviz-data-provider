@@ -71,7 +71,7 @@ class SeqInfoRequest(EpivizRequest):
     def __init__(self, request):
         super(SeqInfoRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select * from genome"
+        self.query = "select * from %s.genome" % (self.params.get("datasourceGroup"))
 
     def validate_params(self, request):
         return None
@@ -101,7 +101,7 @@ class MeasurementRequest(EpivizRequest):
     def __init__(self, request):
         super(MeasurementRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select * from measurements_index"
+        self.query = "select * from %s.measurements_index" % (self.params.get("datasourceGroup"))
 
     def validate_params(self, request):
         return None
@@ -148,8 +148,8 @@ class DataRequest(EpivizRequest):
     def __init__(self, request):
         super(DataRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query_filter = "select distinct %s from %s where chr=%s and end >= %s and start < %s order by chr, start"
-        self.query_all = "select distinct %s from %s order by chr, start"
+        self.query_filter = "select distinct %s from %s.%s where chr=%s and end >= %s and start < %s order by chr, start"
+        self.query_all = "select distinct %s from %s.%s order by chr, start"
 
     def validate_params(self, request):
         params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement", "measurements[]"]
@@ -202,6 +202,7 @@ class DataRequest(EpivizRequest):
         if "genes" in self.params.get("datasource"):
             query_params = [
                 str(query_ms) + ", strand",
+                str(self.params.get("datasourceGroup")),
                 str(self.params.get("datasource")),
                 "'" + str(self.params.get("seqName")) + "'",
                 int(self.params.get("start")),
@@ -212,12 +213,14 @@ class DataRequest(EpivizRequest):
             if self.params.get("seqName") is None:
                 query_params = [
                     str(query_ms),
+                    str(self.params.get("datasourceGroup")),
                     str(self.params.get("datasource"))]
 
                 query = self.query_all
             else:
                 query_params = [
                     str(query_ms),
+                    str(self.params.get("datasourceGroup")),
                     str(self.params.get("datasource")),
                     "'" + str(self.params.get("seqName")) + "'",
                     int(self.params.get("start")),
@@ -257,7 +260,7 @@ class RegionSummaryRequest(EpivizRequest):
     def __init__(self, request):
         super(RegionSummaryRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select distinct %s from %s "
+        self.query = "select distinct %s from %s.%s "
         # where chr=%s and start >= %s and end < %s order by chr, start"
 
     def validate_params(self, request):
@@ -307,6 +310,7 @@ class RegionSummaryRequest(EpivizRequest):
         globalStartIndex = None
         query_params = [
             str(query_ms),
+            str(self.params.get("datasourceGroup")),
             str(self.params.get("datasource"))
             ]
 
@@ -353,7 +357,7 @@ class SearchRequest(EpivizRequest):
     def __init__(self, request):
         super(SearchRequest, self).__init__(request)
         self.params = self.validate_params(request)
-        self.query = "select `chr`, `start`, `end`, gene from genes where gene like %s limit %s"
+        self.query = "select `chr`, `start`, `end`, gene from %s.genes where gene like %s limit %s"
 
     def validate_params(self, request):
         params_keys = ["q", "maxResults"]
@@ -369,6 +373,7 @@ class SearchRequest(EpivizRequest):
 
     def get_data(self):
         query_params = [
+            str(self.params.get("datasourceGroup")),
             "%" + str(self.params.get("q")) + "%",
             int(self.params.get("maxResults"))]
 
