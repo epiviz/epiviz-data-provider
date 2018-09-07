@@ -1,6 +1,6 @@
-flask
-flask-sqlalchemy
+sanic
+sanic_cors
+aiomysql
 pandas
 numpy
 scikit-learn
-pymysql

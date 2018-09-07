@@ -53,7 +53,7 @@ class EpivizRequest(object):
         """
         raise Exception("NotImplementedException")
 
-    def get_data(self):
+    async def get_data(self):
         """
             Get Data for this request type
 
@@ -74,15 +74,15 @@ class SeqInfoRequest(EpivizRequest):
         self.query = "select * from %s.genome" % (self.params.get("datasourceGroup"))
 
     def validate_params(self, request):
-        return None
+        return request
 
-    def get_data(self):
+    async def get_data(self):
 
         genome = {}
         error = None
 
         try :
-            result = utils.execute_query(self.query, self.params)
+            result = await utils.execute_query(self.query, None)
             builds = result.groupby("genome")
 
             for name, group in builds:
@@ -104,15 +104,15 @@ class MeasurementRequest(EpivizRequest):
         self.query = "select * from %s.measurements_index" % (self.params.get("datasourceGroup"))
 
     def validate_params(self, request):
-        return None
+        return request
 
-    def get_data(self):
+    async def get_data(self):
 
         measurements = {}
         error = None
 
         try:
-            result = utils.execute_query(self.query, self.params)
+            result = await utils.execute_query(self.query, None)
 
             # metadata = result["metadata"].apply(lambda x: ujson.loads(x))
             annotation = []
@@ -152,11 +152,11 @@ class DataRequest(EpivizRequest):
         self.query_all = "select distinct %s from %s.%s order by chr, start"
 
     def validate_params(self, request):
-        params_keys = ["datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement", "measurements[]"]
+        params_keys = ["datasourceGroup", "datasource", "seqName", "genome", "start", "end", "metadata[]", "measurement", "measurements[]"]
         params = {}
 
         for key in params_keys:
-            if request.has_key(key):
+            if key in request:
                 params[key] = request.get(key)
                 if key == "start" and params[key] in [None, ""]:
                     params[key] = 1
@@ -180,7 +180,7 @@ class DataRequest(EpivizRequest):
                     raise Exception("missing params in request")
         return params
 
-    def get_data(self):
+    async def get_data(self):
 
         query = None
         query_params = []
@@ -228,24 +228,27 @@ class DataRequest(EpivizRequest):
 
                 query = self.query_filter
         try:
-            result = utils.execute_query(query, query_params)
+            result = await utils.execute_query(query, query_params)
+
+            print("back from query")
+            print(result)
 
             if self.request.get("action") == "getRows":
-                data = utils.format_result(result, self.params)
+                data = await utils.format_result(result, self.params)
                 if len(result) == 0:
                     return data["rows"], ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
                     return data["rows"], None
             elif self.request.get("action") == "getValues":
                 if self.params.get("seqName") is not None:
-                    result = utils.bin_rows(result)
-                data = utils.format_result(result, self.params)
+                    result = await utils.bin_rows(result)
+                data = await utils.format_result(result, self.params)
                 if len(result) == 0:
                     return data, ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
                     return data, None
             else:
-                data = utils.format_result(result, self.params, False)
+                data = await utils.format_result(result, self.params, False)
                 if len(result) == 0:
                     return data, ("query did not match any %s measurement from %s " % (measurement, self.params.get("datasource")))
                 else:
@@ -268,7 +271,7 @@ class RegionSummaryRequest(EpivizRequest):
         params = {}
 
         for key in params_keys:
-            if request.has_key(key):
+            if key in request:
                 params[key] = request.get(key)
                 if key == "start" and params[key] in [None, ""]:
                     params[key] = 1
@@ -284,7 +287,7 @@ class RegionSummaryRequest(EpivizRequest):
                     raise Exception("missing params in request")
         return params
 
-    def get_data(self):
+    async def get_data(self):
         # query_ms = ",".join(self.params.get("measurement"))
         if self.params.get("measurement") is None:
             query_ms = "id, chr, start, end "
@@ -314,10 +317,10 @@ class RegionSummaryRequest(EpivizRequest):
             str(self.params.get("datasource"))
             ]
 
-        result = utils.execute_query(self.query, query_params)
+        result = await utils.execute_query(self.query, query_params)
         total_length = len(result)
 
-        data = utils.format_result(result, self.params)
+        data = await utils.format_result(result, self.params)
 
         if self.request.get("action") == "getRows":
             return data["rows"], None
@@ -335,7 +338,7 @@ class ScreenshotRequest(EpivizRequest):
         self.chromePath = ""
         self.params = request
 
-    def get_data(self):
+    async def get_data(self):
         chrome_options = Options()
         chrome_options.add_argument("--headless")
         chrome_options.add_argument("--window-size=1920x1080")
@@ -364,20 +367,20 @@ class SearchRequest(EpivizRequest):
         params = {}
 
         for key in params_keys:
-            if request.has_key(key):
+            if key in request:
                 params[key] = request.get(key)
             else:
                 if key not in ["measurement", "genome", "metadata[]"]:
                     raise Exception("missing params in request")
         return params
 
-    def get_data(self):
+    async def get_data(self):
         query_params = [
             str(self.params.get("datasourceGroup")),
             "%" + str(self.params.get("q")) + "%",
             int(self.params.get("maxResults"))]
 
-        result = utils.execute_query(self.query, query_params, "search")
+        result = await utils.execute_query(self.query, query_params, "search")
 
         return result.to_dict(orient='records'), None
 
