@@ -1,7 +1,6 @@
 """Collection of request classes"""
 
 import epivizws.utils as utils
-from flask import request
 import ujson
 import sys
 from selenium import webdriver
