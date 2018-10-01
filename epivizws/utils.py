@@ -19,7 +19,10 @@ def execute_query(query, params, type="data"):
     """
 
     if type is "search":
-        df = pd.read_sql(query, con=db.get_engine(app), params=params)
+        if params:
+            df = pd.read_sql(query, con=db.get_engine(app), params=params)
+        else:
+            df = pd.read_sql(query, con=db.get_engine(app))
         return df
     # if params is None:
     #     df = pd.read_sql(query, con=db.get_engine(app))

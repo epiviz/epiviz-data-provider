@@ -354,6 +354,7 @@ class SearchRequest(EpivizRequest):
         super(SearchRequest, self).__init__(request)
         self.params = self.validate_params(request)
         self.query = "select `chr`, `start`, `end`, gene from genes where gene like %s limit %s"
+        self.queryRandom = "select `chr`, `start`, `end`, gene from genes order by rand() limit 1"
 
     def validate_params(self, request):
         params_keys = ["q", "maxResults"]
@@ -368,11 +369,16 @@ class SearchRequest(EpivizRequest):
         return params
 
     def get_data(self):
-        query_params = [
-            "%" + str(self.params.get("q")) + "%",
-            int(self.params.get("maxResults"))]
 
-        result = utils.execute_query(self.query, query_params, "search")
+        if self.params.get("q"):
+            query_params = [
+                "%" + str(self.params.get("q")) + "%",
+                int(self.params.get("maxResults"))]
+
+            result = utils.execute_query(self.query, query_params, "search")
+        else:
+            print(self.params.get("q"))
+            result = utils.execute_query(self.queryRandom, None, "search")
 
         return result.to_dict(orient='records'), None
 
