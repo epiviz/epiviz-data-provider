@@ -4,3 +4,4 @@ aiomysql
 pandas
 numpy
 scikit-learn
+selenium
